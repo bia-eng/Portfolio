@@ -1,0 +1,13 @@
+title: Rubia Qamar
+logo: /assets/img/rubia.png
+description: Data Analytics Portfolio
+show_downloads: false
+github:
+  is_project_page: false
+theme: jekyll-theme-minimal
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      full-width: true
