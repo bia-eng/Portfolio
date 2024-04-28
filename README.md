@@ -1,23 +1,27 @@
 # Data Analyst
 
-#### Technical Skills: Python, R, SQL, DAX, Power Query, Power BI, Tableau, Looker, Power Platform 
+#### Technical Skills: Python, R, SQL, SPSS, Stata, Power BI, Tableau, MS Office Suite 
 
 ## Education
-- M.Sc., Digital Engineering | OVGU Magdeburg (_Oct 2024_)								       		
-- B.E., Mechanical Engineering	| NED University of Engineering and Technology (_December 2016_)	 			        		
+- M.Sc., Data Science | Loughborough University (_Ongoing_)
+- MBA, Majors in Business Analytics | Middlesex University Dubai (_October 2019_)								       		
+- B.E., Petroleum Engineering	| NED University of Engineering and Technology (_December 2014_)	 			        		
 
 ## Work Experience
-**IT Intern @ Finance in Motion GmbH (_June 2023 - Dec 2023_)**
-- Implementation of analytical reports using Microsoft Fabric, Power BI, and Azure services for different business units, resulting in a 70% increase in reporting efficiency and automation of manual processes.
-- Collaborating with business units for development and implementation of solutions using Microsoft Power Platform.
+**Senior Business and Data Analyst @ Ashfaq Associates, Karachi (_Jan 2021 - Jul 2023_)**
+- Led a team of developers in data analysis for portal transformation. Developed conceptual, logical, and physical data models for business intelligence (BI) efforts.
+- Collaborated with cross-functional teams to gather requirements, conduct root cause and ensure alignment with business goals.
+- Led a project to map the customer journey for a CRM, identifying key pain points and proposing solutions that resulted in a 15% increase in user engagement.
 
-**Product Data Analyst @ Mindfuel GmbH (_May 2022 - Jan 2023_)**
-- Collaborated with Enablement team in building a organisation-wide OKRs training asset, which resulted in 25% increase in productivity.
-- Supported Data team in building interactive reports, dashboards, identifying and fixing data quality issues in internal data warehouse of Mindfuel.
+**Senior Business Analyst @ Onlinist, Dubai (_Aug 2020 - Nov 2020_)**
+- Analyzed user behavior data to identify inefficiencies in the CRM for an e-commerce platform, resulting in a 15% increase in conversion rates within three months. This resulted in a 7% growth in revenue and a 10% increase in customer satisfaction.
+- Collaborated with cross-functional teams to analyse user behaviour, identify areas for improvement, and develop data-driven solutions. This collaborative approach led to a 20% increase in team productivity and a 15% reduction in development time for new features.
+- Managed agile project cycles, ensuring timely delivery and adherence to stakeholder expectations. All projects were delivered on time and within budget, exceeding stakeholder expectations and achieving a 90% satisfaction rating.
 
-**Junior BI Engineer @ Love For Data (_May 2021 - Mar 2022_)**
-- Utilized Power BI and Azure services to develop a sentiment analysis dashboard for a government entity based in MENA region, leading to automation in service monitoring, 45% faster processing of requests, and 20% increase in satisfaction levels.
-- Provided ad-hoc support for analysis, reporting, and other business needs for a nano-loan application for a client based in Egypt. Carried out maintenance and development of new data insights on existing BI solution on Tableau.
+**Business Data Analyst @ Wahaj Enterprise, Karachi (_June 2015 - Jan 2020_)**
+- Conducted business process analysis to identify key issues, gaps, and opportunities for improvement. This analysis led to the identification of 15 process inefficiencies, resulting in a 20% improvement in overall operational efficiency.
+- Developed pricing optimization models that led to improved profitability and increased revenue. These models achieved a 10% increase in profit margin and a 15% growth in annual revenue.
+- Identified key drivers for customer acquisition via market research and developed targeted marketing campaigns for new products. These targeted campaigns resulted in a 25% increase in customer acquisition for new products within the first year of launch.
 
 ## Projects
 **Sentiment Analysis of Customer Feedback**
