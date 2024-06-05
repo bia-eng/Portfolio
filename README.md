@@ -24,36 +24,48 @@
 - Identified key drivers for customer acquisition via market research and developed targeted marketing campaigns for new products. These targeted campaigns resulted in a 25% increase in customer acquisition for new products within the first year of launch.
 
 ## Projects
-**Sentiment Analysis of Customer Feedback**
-- Developed a dashboard for a government entity in Ajman to analyze the feedback of people regarding different transportation services offered, to monitor customer satisfaction and work on improvement areas as highlighted by people.
-- **Tools used**: Power BI, DAX Studio, Azure Cloud (Text-to-Speech, AI Services, SQL Database), Postman
+**Capital Bike Share Operations**
+- This study was conducted against a backdrop of growing awareness and regulatory requirements for accessibility in public transport. Between 2015 and 2022, the SNCF welcomed an increase in disabled passengers, prompting an urgent need for a thorough analysis and improvement of services offered.
+- **Tools & Methodologies**: Data analysis was conducted using R for statistical computations and Tableau for visualizations. The methodologies included correlation analysis, linear regression, and cluster analysis to identify patterns and draw insights.
 
-![Sentiment_Analysis_Demo](/assets /img/sentiment_analysis_2.jpeg)
+**Baseball Performance Prediction using Statistical Modeling**
+- This project demonstrates my ability to utilize statistical modeling in R to analyze baseball data and predict player performance metrics. I leveraged the Lahman package to build models that provide insights into:
+- **Team Salary Trends:** A linear regression model predicts team mean salaries based on the year, revealing salary inflation trends.
+- **Number of Runs Scored:** A Poisson regression model predicts the number of runs a player scores, considering factors like hits, year, position, height, and age.
+- **Division Winners:** A logistic regression model with Lasso penalization predicts division winners based on various team-level data (excluding identifiers).
+- **Tools & Methodologies**: - Data acquisition and manipulation using R.
+- Exploratory data analysis and visualization techniques.
+- Implementation of statistical modeling methods (linear regression, Poisson regression, logistic regression with Lasso).
+- Model interpretation and evaluation.
 
-![Sentiment_Analysis_Demo](/assets /img/sentiment_analysis_1.jpeg)
+**Student Monitoring System**
+- Educators often lack real-time insights into student engagement and performance in online learning environments. Traditional methods for monitoring student progress, like manual review of test scores, are time-consuming and offer limited visibility.
+This project proposes a student monitoring system designed to address these challenges. It offers various functionalities to analyze student performance and identify areas for improvement.
+- **Tools & Methodologies**: The project leveraged SQLite to create a database of student test results and further utilized Python packages to do analysis.
 
-**Financial Consumer Complaints**
-- Developed a dashboard for financial consumer complaints as part of a bootcamp, to monitor customer complaints.
-- **Tools used**: Tableau, Tableau Prep, Figma
 
-![Financial_Consumer_Complaints](/assets /img/financial_consumer_complaints.jpeg) 
+**Customer Segmentation and Risk Prediction using WEKA**
+- Businesses often struggle to understand their customer base and predict future behavior. Traditional methods like demographic segmentation may not capture the full picture.
+Hence, I have presented a modern analytical approach to understand and predict customer behavior.
+- **Tools & Methodologies**: This project utilizes WEKA to perform data pre-processing, feature selection, classification, and clustering on a customer dataset.
 
-**Population Density of Sindh**
-- 3D map of Sindh (Province of Pakistan) that showcases the population density of that region in 2023 (Dataset released in Nov-2023). Kontur population dataset was utilized to carry out the analysis. Dominant peaks in the image correspond to the cities Karachi and Hyderabad, respectively.
-- **Tools used**: R Studio, Rayshader package for rendering, Magisk package for annotation layer, GIS, Spatial Analysis
+**Automated Image Classification for Improved Product Management**
+- Businesses in various sectors, like e-commerce, manufacturing, and logistics, struggle with manual image classification for product management and inventory control. This process is time-consuming, error-prone, and expensive, especially when dealing with large image datasets.
+This project proposes a system that classifies new, unseen images into predefined categories representing different products.
+- **Tools & Methodologies**: This project proposes a machine learning approach to automate image classification for improved product management and inventory control. The system utilizes supervised learning techniques to train a model on labeled image data.
 
-![Sindh_Population_Density](/assets /img/sindh_population_density.jpeg)
+**Covid-19 Data Analysis with Tableau**
+- The COVID-19 pandemic has posed unprecedented challenges for governments and businesses. Predicting the trajectory of the virus and its impact is crucial for implementing effective public health measures and business continuity plans.
+- **Tools & Methodologies**: The Dataset has been taken from WHO Covid-19 Data. This project uses Excel for the Data Cleansing and preparation. The visualisation and Analysis have been done on Tableau. 
 
-**Let Me Google That For You WebApp**
-- A chatbot that allows real-time chat with BARD and Google Search. Also included text summarization using BERT framework.
-- **Tools used**: Python, Streamlit, BARD API, SERP API, BERT for text summarization
+**Global Maternal Mortality Rates and Birth Outcomes Analysis with Tableau**
+- This project utilizes Tableau, a powerful data visualization tool, to create an interactive dashboard that presents maternal mortality rates and birth outcomes data in an engaging and informative way.
+- **Tools & Methodologies**: The Dataset has been taken from WHO maternal mortality rates  Data. This project uses Excel for the Data Cleansing and preparation. The visualisation and Analysis have been done on Tableau.
+**Data-Driven Sales Growth - A Financial and Sales Analysis for Increased Revenue**
+- This project demonstrates the power of data analysis in driving significant sales improvement. I partnered with a client (name or industry if confidential) to conduct a comprehensive financial and sales analysis using Excel and Tableau.
+- **Tools & Methodologies**: Excel, Powepoint and Tableau.
 
-![Chatbot Demo](/assets /img/demo_chatbot_webapp.gif)
+**Streamlining Real Estate Development with a Comprehensive Portal - Functional and Technical Documentation**
+- This project addresses the challenge of streamlining communication and collaboration within real estate development projects. It focuses on creating a functional and technical document for a Real Estate and Development portal.
+- **Tools & Methodologies**: Microsoft Visio.
 
-**Invoice Processing App**
-- Developed a model-driven app for extracting information from invoices, storing data, and getting approvals from managers using Microsoft Power Platform.
-- **Tools used**: Power Apps, AI Builder, Power Automate, Dataverse.
-
-**Ecommerce WebApp**
-- Web-based application for an e-commerce platform as part of a semester project. The app has features like setting up a seller account, buying / selling products, viewing product details and reviews.
-- **Tools used**: Python, PHP, MySQL, Gitlab, JIRA, Figma
