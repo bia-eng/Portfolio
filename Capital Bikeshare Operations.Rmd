@@ -9,7 +9,7 @@ output:
 ---
 1) Introduction 
 
-The coursework is about Capital Bikeshare riders. A USA based company Capital bikeshare launched its report in 2010 in response to the questions regarding bikershare locations and riders data. It is an interesting topic for research purpose as it provides key insights regarding the riders data and bikeshare locations such as popular stations , number of bikes , type of members , etc.
+The project is about Capital Bikeshare riders. A USA based company Capital bikeshare launched its report in 2010 in response to the questions regarding bikershare locations and riders data. It is an interesting topic for research purpose as it provides key insights regarding the riders data and bikeshare locations such as popular stations , number of bikes , type of members , etc.
 
 2) Data
 
