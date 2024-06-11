@@ -1,0 +1,171 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+  html_notebook:
+    toc: yes
+---
+1) Introduction 
+
+The coursework is about Capital Bikeshare riders. A USA based company Capital bikeshare launched its report in 2010 in response to the questions regarding bikershare locations and riders data. It is an interesting topic for research purpose as it provides key insights regarding the riders data and bikeshare locations such as popular stations , number of bikes , type of members , etc.
+
+2) Data
+
+Their are two dataset namely : "rides_2018_2019_extract.csv" and bikeshare_locations. The first one contains variables that provides information about the ride such as start date of ride , end date of ride, duration of ride , bike number. However the bikeshare data contains information about location of bike , Number of Empty Terminals , Number of empty Docs, etc. 
+The raw data original source is system data from the company Capital Bikeshare. the data needs to be cleanded to be prepared for the analysis. I have done following steps to clean the data:
+
+i) Removing all NAs column from the "rides_2018_2019_extract.csv". Please note that ride_id,rideable_type,start_lat,start_lng,end_lat,end_lng,is_equity all of these contain NA values therefore i omitted these variables as it does not make any sense to analyse them.
+I did this by using dplyr() function.
+ii) Furthermore, I also used the clean_names() function from the janitor() package to make the column names lower case.
+iii) However, in "bikeshare_location.csv" data i used the clean_names() function from the janitor() package to make the column names lower case. As there were no NA columns and data seems fine for the analysis. 
+iv) Formatting date in the dataset data_rides to make it clean for the analysis.
+To prepare the data for the analysis I used the following commands in R:
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(magrittr)
+library(janitor)
+library(lubridate)
+```
+```{r}
+data_rides <- read.csv("C:/Users/user/Downloads/data/rides_2018_2019_extract.csv")
+data_rides <- data_rides %>% dplyr::select_if(~!any(is.na(.)))
+data_rides %>% clean_names() %>% colnames()
+names(data_rides) <- tolower(names(data_rides))
+data_rides$bike_number <- tolower(data_rides$bike_number)
+data_rides <- data_rides %>% mutate(
+  start.date = date(start.date), 
+  end.date = date(end.date)
+)
+```
+```{r}
+## summary of data_rides to know the variable types :
+glimpse(data_rides)
+```
+As we can see from the above table that there are two types of variables used in the data i.e. integer and Character. 
+```{r}
+data_bikes <- read.csv("C:/Users/user/Downloads/data/bikeshare_locations.csv")
+data_bikes <- data_bikes %>% dplyr::select_if(~!any(is.na(.)))
+data_bikes %>% clean_names() %>% colnames()
+names(data_bikes) <- tolower(names(data_bikes))
+```
+```{r}
+## summary of data_bikes to know the variable types :
+glimpse(data_bikes)
+
+```
+As it can be seen above that the data set contains combination of integer, double, and character variables. 
+
+3) Questions:
+
+Q1) What is the distribution of registered and casual users for bike rentals (monthly_demand by year)
+Operationalise : I have done that by taking the count of member type and grouping them with respect to month and year.
+
+Q2) How does the start station demand fluctuate across various stations?
+Operationalise : I have operationalised that by taking the counts of start.station.names and sorting them in a data frame. I have taken the top 10 stations for the purpose of clear visualisation.
+
+Q3) Which bike numbers are used more often?
+Operationalise : I have operationalised that by taking the counts of bike_numbers and sorting them in a data frame. I have taken the top 10 stations for the purpose of clear visualisation.
+
+Q4) How does the member type of bike rentals vary on daily basis? (daily_demand by months)
+Operationalise: I have done that by taking the count of member type and grouping them with respect to month and year.Furthermore, I have created a variable daily_demand to track the daily demand of the rides so it can be used to plot.
+
+Q5) Which terminal has the highest number of empty docs?
+Operationalise : I have done that by taking the aggregate of the number_of_empty_docs and terminal_numbers.Later on arranging them in descending order for the purpose of analysis.
+
+4) Analysis:
+
+Q1) What is the distribution of registered and casual users for bike rentals (monthly_demand by year)
+
+```{r}
+monthly_demand <- data_rides %>%
+  group_by(member_casual, month = month(start.date), year = year(start.date)) %>%
+  count() %>%
+  ungroup()
+ggplot(monthly_demand, aes(x = month, y = n, color = member_casual)) +
+  geom_line() +
+  xlab("Month") +
+  ylab("Number of bike rentals") +
+  ggtitle("Monthly demand for bikes by member type") +
+  facet_wrap(~year)
+```
+
+The above graph shows that there are more numbers of registered members and less number of casual members. The graph shows peak in the number of Members around August 2018. Similarly, it shows a rise in Members in September 2019.
+
+Q2) How does the start station demand fluctuate across various stations? 
+
+```{r}
+start_station_counts <- table(data_rides$start.station.name) 
+sorted_stations <- sort(start_station_counts, decreasing = TRUE)
+top_stations_summary <- data.frame(Start_Station = names(sorted_stations),Frequency = sorted_stations)
+top_stations_summary <- head(top_stations_summary, 10)
+ggplot(top_stations_summary, aes(x = reorder(Start_Station, -Frequency.Freq), y = Frequency.Freq)) +
+  geom_bar(stat = "identity", fill = "skyblue") + coord_flip() + 
+  labs(title = "Start Station Popularity", 
+       x = "Start Station", y = "Frequency of Usage") + theme_minimal() 
+```
+The above bar chart shows the top 10 start stations. It can be observed that Columbus Circle/ Union Station is the most popular station since it has the highest frequency. The second popular is the Lincoin Memorial. However, the other stations frequency does not vary from a large difference. It can be said the location of the Union Station is accessible for the people or it might be large in population due to which it has the highest frequency usage. Similarly, the on that has lower frequency such as 14th & Irving St NW might be in a remote area where people can not access it easily therefore, it has the lowest frequency of usage.
+
+Q3) Which bike numbers are more often used?
+
+```{r}
+bike_usage_counts <- data_rides %>% count(bike_number, sort = TRUE)
+bike_usage_counts <- arrange(bike_usage_counts, desc(bike_usage_counts))
+top_bikes <- head(bike_usage_counts, n=10)
+ggplot(top_bikes, aes(x = as.factor(bike_number), y = n)) + 
+  geom_bar(stat = "identity", fill = "skyblue") + 
+  labs(title = "Frequency of Usage for Each Bike",
+       x = "Bike Number", y = "Frequency") +
+  theme_minimal()
+```
+The above graph represents the relation between bike_number and their frequency of usage. It can be observed that bike_number w99910 is used the most. However, bike_number w24871 is the least used. It can be because the bike_number w99910 is in a better condition, or modified. Whereas, the bike_number w24871 can be an old version. Due to which riders prefer the w99910 the most.
+
+Q4) How does the member type of bike rentals vary on daily basis? (daily_demand by months)
+
+```{r}
+daily_demand <- data_rides %>%
+  group_by(member_casual, day = day(start.date), month = month(start.date)) %>%
+  count() %>%
+  ungroup()
+ggplot(daily_demand, aes(x = day, y = n, color = member_casual)) +
+  geom_line() +
+  xlab("Month") +
+  ylab("Number of bike rentals") +
+  ggtitle("Monthly demand for bikes by member type") +
+  facet_wrap(~month)
+
+```
+The above bar chart shows increase in number of registered members over the course of year.August and September has the highest number of members for bike rentals. Whereas, the number of casual users has decreased with the course of time. Hence, December has the lowest number of casual users for bike rentals.
+
+Q5) Relation between Terminal Number and Empty docs ?
+
+```{r}
+empty_docks_per_terminal <- aggregate(number_of_empty_docks ~ terminal_number, data = data_bikes, sum)
+empty_docks_per_terminal <- arrange(empty_docks_per_terminal, desc(number_of_empty_docks))
+head(empty_docks_per_terminal)
+top_empty_docks_per_terminal <- head(empty_docks_per_terminal, 50)
+p <- empty_docks_per_terminal <- aggregate(number_of_empty_docks ~ terminal_number, data = data_bikes, sum)
+empty_docks_per_terminal <- arrange(empty_docks_per_terminal, desc(number_of_empty_docks))
+head(empty_docks_per_terminal)
+top_empty_docks_per_terminal <- head(empty_docks_per_terminal, 50)
+plot(top_empty_docks_per_terminal$terminal_number, top_empty_docks_per_terminal$empty_docks,
+     ylab = "Terminal Number", xlab = "Empty Docks",
+     main = "Relation between Terminal Number and Empty Docks")
+ggplot(top_empty_docks_per_terminal, 
+       aes (y = terminal_number, 
+            x = number_of_empty_docks)) + 
+       geom_point() 
+```
+
+The above graph shows scatter plot of Relation between terminal number and empty docks.It can be observed that Terminal_Number 32200 has highest number of empty docks. Whereas, Terminal_Number 31000 has lowest number of empty docks. It shows that in the Terminal_Number 31000 has not much parking space left for the bikes. Whereas, Terminal_Number 32200 has a lot of parking space left for the bikes. This is useful information for the riders who are seeking parking for their bikes.
+
+5) Conclusion:
+
+From the above analysis it can be observed that which bike_number is mostly used, which terminal_number has the most bikes, what are the most popular start station names. Which terminal_number has the highest and lowest empty docks. That gives a fair idea of performance of bikes as well as provides information for stations and terminals. Furthermore, it would be interesting to know more variables such as seasons, type of bikes electric, non-electric to answer the following questions:
+
+1) Which is the peak season in which most rides are taken ?
+2) Does ride frequency and bike stations depend on the weather conditions?
+3) Does the availability of electric bikes affects ride duration and frequency?
