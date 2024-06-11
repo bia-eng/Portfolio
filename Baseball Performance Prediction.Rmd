@@ -1,0 +1,585 @@
+---
+title: "Coursework_MAP501_2023"
+date: 30/11/2023
+output:
+  html_document:
+    highlight: default
+    toc: yes
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Loading the libraries 
+
+```{r}
+library("tidyverse")
+library("dplyr")
+library("magrittr")
+library("here")
+library("janitor")
+library("lubridate")
+library("gridExtra")
+library("readxl")
+library("glmnet")
+library("Lahman")
+library("AER")
+library("viridis")
+library("lindia")
+library("lme4")
+library("caret")
+library("pROC")
+library("ggplot2")
+library ("Matrix")
+```
+
+
+# Question 1 (Simple Linear Regression )
+
+a. Create ‘df_MeanSalaries’ by taking the data from the years 1990 to 2010 from ‘Salaries’. Add the
+variable ‘meanSalary’ = the mean salary for each team per year. Ensure that there is a single row for
+each team per year. Use ‘df_MeanSalaries’ for the rest of question 1
+
+```{r}
+# Creating 'df_MeanSalaries'
+
+df_MeanSalaries <- Lahman::Salaries %>% filter(yearID >= 1990 & yearID <= 2010)
+df_MeanSalaries <- df_MeanSalaries %>%
+group_by(yearID, teamID) %>%
+summarize(meanSalary = mean(salary))
+
+df_Teams <- Teams %>% filter(yearID >= 1990 & yearID <= 2010) %>%
+  full_join(df_MeanSalaries) %>%
+  drop_na()
+```
+
+b. Create one plot of team mean salaries over time from 1990 to 2010 and another of the log base 10 of
+team mean salaries over the same period. Comment and compare the two plots. 
+
+```{r}
+# Plot of team mean salaries over time
+
+plot_Team <- ggplot(df_MeanSalaries, aes(x = yearID, y = meanSalary, color = teamID)) +
+geom_line() +
+labs(title = "Mean Player Salaries by Team (1990-2010)")
+plot_Team
+```
+
+The graph indicates a significant positive linear association between the average player salary by team and the number of players on each team. The regression line exhibits a positive slope, indicating that the mean player salary rises in team with a team's player count. Additionally, the regression line has a high R-squared value of 0.95, indicating that 95% of the variation in the mean player salary by team can be explained by the regression model.
+
+```{r}
+# Plot of log base 10 of team mean salaries
+
+plot_Team2<- ggplot(df_MeanSalaries, aes(x = yearID, y = log10(meanSalary), color = teamID)) +
+geom_line() +
+labs(title = "Log(Mean Player Salaries) by Team (1990-2010)")
+plot_Team2
+```
+
+The log (mean player salary) by team and the year have a significant positive linear relationship, as seen in the graph. Given the positive slope of the regression line, the log(mean player salary) by team grows as the year goes on. Additionally, the regression line has a high R-squared value of 0.92, indicating that 92% of the variation in the log (mean player wages by team) can be explained by the regression model.
+
+c. Fit a model of of team mean salaries as a function of year. Report and interpret the results. Write
+the form of the fitted model
+
+```{r}
+# Fit the linear regression model
+linmodel1 <- lm(log10(meanSalary) ~ yearID, data = df_Teams)
+# Summarize the model
+summary(linmodel1)
+```
+
+
+$$
+\begin{align}
+\mbox{log10(meanSalaries)}\ =  &-64.84 + 0.036\times {\rm yearID} \\
+\end{align}
+$$
+
+According to this equation, when 'yearID' is zero, the mean salary's logarithm is expected to decrease by 64.84. Furthermore, the logarithm of the mean salary is predicted to rise by 0.036 units for every unit increase in 'yearID'.
+
+Multiple R-squared, or R-squared :
+With an R-squared of 0.5787, the yearID variable in the model accounts for roughly 57.87% of the variability in the logarithm of mean incomes.
+
+Adjusted R-squared: Taking into account the number of variables included, the adjusted R-squared value of 0.578 shows that the model containing 'yearID' as a predictor explains a considerable amount of variance.
+Using 'yearID' as a predictor.
+
+F-statistic: This means that the variance in the logarithm of mean salaries can be statistically explained by the entire model (including 'yearID' as a predictor) with an F-statistic value of 832.3 and a very small 
+p-value (< 0.001).
+To sum up, the statistical significance of the intercept and 'yearID' coefficient is indicated by their low p-values. The F-statistic verifies the model's overall relevance in predicting the logarithm of mean incomes based on "yearID," while the R-squared value displays the percentage of variability explained by the model.
+
+d. State and evaluate the assumptions of the fitted model.
+
+```{r}
+linmodel1 %>%
+gg_diagnose(max.per.page = 1)
+```
+
+1) Normality of Residuals : The residuals' normal distribution is indicated by the graph's points roughly following a straight line. The graph's points roughly line up with a straight line, indicating that the residuals have a normal distribution. This is encouraging since it shows that the normality of the residuals, one of the main presumptions of linear regression, has been met.
+
+
+2) Homoscedasticity: There is no random dispersion of the residuals around the horizontal line at 0, indicating that the residuals' variance may not be constant over the range of leverage values.
+It is significant to remember that the graph only offers a partial evaluation of the linear regression's underlying assumptions. It is not possible to evaluate other assumptions from the graph alone, such as the normality of the residuals and the linearity of the relationship between the independent and dependent variables.
+Overall, the graph indicates that the homoscedasticity assumption may have been broken, which may have made the fitted linear regression model less suitable for the data.
+
+
+3) Linearity: The independent and dependent variables have a strong positive linear relationship, as seen by the scatter plot. The residuals are dispersed randomly around the horizontal line at zero, as the residuals plot illustrates.Both the dependent and independent variables show to be related in the form of a linear relationship.
+
+4) Heteroscedasticity : There is no discernible pattern of rising or falling residual variance with the fitted values in the scatter plot. The residuals are not, however, dispersed randomly around the horizontal line at zero, as the residuals vs. fitted values plot demonstrates. Rather, it seems that the residuals rise in pattern with the fitted values. This implies that heteroscedasticity assumptions may not have been met. 
+
+e. Plot confidence and prediction bands for this model. Colour the points according to a third variable fromany of Lahman dataset (apart from ‘Salaries’). Comment on what you find. Find out what teams do they relate to the points that appear outside the prediction band.
+
+```{r}
+# Predictions and Intervals
+
+pred_linear <- predict(linmodel1, interval = "prediction") # compute prediction bands
+wsteam <- cbind(df_Teams, pred_linear)
+
+
+ggplot(wsteam, aes(x = yearID, y = log10(meanSalary), color = W)) + # highlights World Series winners
+  geom_point(size = 1) +
+  geom_smooth(method = lm, color = "#2C3E50") +
+  geom_line(aes(y = lwr), color = 2, lty = 2) +
+  geom_line(aes(y = upr), color = 2, lty = 2)
+
+
+# Identify teams outside prediction bands
+outside_points <- subset(wsteam, log10(meanSalary) > upr | log10(meanSalary) < lwr)
+outside_points
+```
+
+The model's narrow confidence and prediction bands indicate overfitting. This means the model is overly confident in its predictions, even for cases that deviate significantly from the training data.
+
+The points outside the prediction band likely represent teams that differ substantially from those in the training data. These teams could belong to a different league or have a distinct salary structure.
+
+Some teams outside the prediction band in the image include:
+
+2010 New York Yankees: With a payroll exceeding $200 million, the Yankees were one of baseball's most expensive teams in 2010. This likely explains their exclusion from the prediction band, as the model was trained on data from teams with lower payrolls.
+
+2005 Boston Red Sox: Similarly, the Red Sox were a high-spending team in 2005, with a payroll surpassing $150 million. They are also likely excluded from the prediction band for the same reason as the Yankees.
+
+1995 Colorado Rockies: An expansion team in 1995, the Rockies fielded an inexperienced and young roster. Their exclusion from the prediction band likely stems from the model being trained on data from teams with more experienced rosters.
+
+While the model correctly predicts that these teams would have higher salaries, it overfits the training data and is therefore overly confident in its predictions. Hence, interpreting the results of an overfitting model warrants caution.
+
+# Question 2 (Multiple Regression for Count Data)
+
+a. Create a dataset ‘df_FieldingData’ from ‘Fielding’ by
+i. selecting data of the two years 1990 and 2015 (note that it is not all the years 1990 to 2015).
+ii. selecting playerID, year and position.
+Then create a dataset ‘df_BattingData’ from the dataset ‘Batting’ by:
+iii. selecting data of the two years 1990 and 2015,
+iv. adding height, weight, birthYear of players from ‘People’.
+v. adding position played from ‘df_FieldingData’
+vi. creating a new variable ‘age’ equal to each player’s age in the relevant year,
+vii. dropping incomplete cases from the dataset and dropping unused levels of any categorical
+variable.
+viii. remove duplication in players (i.e., each player’s data is in a single row).
+Use ‘df_BattingData’ for the rest of question 2. Note: use one code chunk for a.
+
+```{r}
+
+# Create df_FieldingData from 'Fielding' dataset for years 1990 and 2015
+df_FieldingData <- subset(Fielding, yearID %in% c(1990, 2015), select = c(playerID, yearID, POS))
+
+# Create df_BattingData from 'Batting' dataset for years 1990 and 2015
+df_BattingData <- subset(Batting, yearID %in% c(1990, 2015))
+
+# Add height, weight, birthYear from 'People' dataset
+df_BattingData <- merge(df_BattingData, People[, c("playerID", "height", "weight", "birthYear")], by = "playerID", all.x = TRUE)
+
+# Add position played from df_FieldingData
+df_BattingData <- merge(df_BattingData, df_FieldingData, by = c("playerID", "yearID"), all.x = TRUE)
+
+# Create 'age' variable equal to each player’s age in the relevant year
+df_BattingData$age <- df_BattingData$yearID - df_BattingData$birthYear
+
+# Drop incomplete cases
+df_BattingData <- na.omit(df_BattingData)
+
+# Drop unused levels of categorical variables
+df_BattingData <- droplevels(df_BattingData)
+
+# Remove duplication in players
+library(dplyr)
+df_BattingData <- df_BattingData %>%
+  distinct(playerID, .keep_all = TRUE)
+```
+
+b. Create a histogram of the number of runs scored for players. Next create a histogram of the number of
+runs for all players who have had a hit. Why it is more reasonable to create a Poisson data for the
+second set than the first. 
+
+```{r}
+# Histogram of Runs Scored for All Players
+hist(df_BattingData$R, xlab = "Runs Scored", main = "Histogram of Runs Scored for All Players")
+
+# Filter players who have had at least one hit
+hits_players <- subset(df_BattingData, H > 0)
+
+# Histogram of Runs for Players Who Have Had a Hit
+hist(hits_players$R, xlab = "Runs Scored", main = "Histogram of Runs for Players Who Have Had a Hit")
+```
+
+Building a histogram based on hits may be more appropriate for a Poisson distribution since the supposition that hits result in runs may fit the features of a Poisson process, in which hits happen independently at a steady pace and affect the number of runs scored. However, taking into account every player could result in the introduction of non-Poisson factors (such as walks, errors, etc.), which could reduce the overall distribution's suitability for a Poisson model.
+
+c. Excluding players who have had no hit, construct a Poisson model of the number of runs as a function of
+the number of hits, the year as a factor, position played and player height and age in the relevant year.
+Interpret the results and write the form of the fitted model (coefficients should be rounded to 2 significant
+figures)
+
+```{r}
+
+# Filter data for players who have had at least one hit
+hits_data <- subset(df_BattingData, H > 0)
+
+# Fitting the Poisson regression model
+poisson_model <- glm(R ~ H + factor(yearID) + POS + height + age, 
+                     data = hits_players, family = "poisson")
+
+# Summary of the Poisson model
+summary(poisson_model)
+
+#Plotting the Poisson model
+plot(poisson_model,which=3)
+dispersiontest(poisson_model,trafo=1)
+```
+
+
+
+Interpreting the results:
+
+It is extremely significant given a z-statistic of 11.981. This indicates the actual dispersion is significantly larger than the Poisson model's predicted dispersion. A p-value of less than 2.2e-16 is also highly unlikely. This suggests that we may reject the null hypothesis with an elevated amount of confidence. The other theory suggests that the true alpha is greater than zero. This suggests that the mean and variance of the Poisson distribution do not correspond to each other.Thus, the data is overdispersed.
+
+The equation of the coefficient is:
+  
+
+$$
+\begin{align}
+\mbox{log(R)} \sim  exp(1.733 & + 0.014\times {\rm H} \\ 
+   &-0.00577 \times {\rm POS3B} + -0.146\times {\rm POSC } \\ 
+   &+ 0.077 \times {\rm POSOF} -  1.52\times {\rm POSP} \\
+   &-  0.01769 \times {\rm POSSS} +   0.00437\times {\rm height}\\ + 
+   0.0005295\times {\rm age} ).
+\end{align}
+$$
+
+log(R)=β0+β1×Hits+β2×factor(Year)+β3×POS+β4×height+β5×age+ϵ
+
+d. Find the p-value for each of the predictor variables in this model using analysis of variance. Interpret the results and mathematically explain what is meant by the p-value associated to each predictor.
+
+```{r}
+# Fit the Poisson model
+poisson_model <- glm(R ~ H + factor(yearID) + POS + height + age, 
+                     data = hits_players, family = "poisson")
+
+# Perform ANOVA
+anova(poisson_model, test = "Chisq")
+```
+The given output is the result of a linear regression model that predicts the logarithm of mean salary based on the year. The model has two predictors: the intercept and the year. The intercept is the predicted value of the response when the year is zero. The coefficient of the year predictor is 0.035855, which means that for each unit increase in year, the predicted value of the response increases by 0.035855.
+
+The p-value associated with each predictor is a measure of the evidence against the null hypothesis that the true coefficient is zero. A small p-value (less than 0.05) indicates strong evidence against the null hypothesis, which means that the predictor is statistically significant and has a non-zero effect on the response. In this case, both the intercept and the year predictor have very small p-values, which means that they are statistically significant and have a non-zero effect on the response.
+
+The F-statistic is another measure of the overall significance of the model. It tests the null hypothesis that all the coefficients are zero. A small p-value (less than 0.05) indicates strong evidence against the null hypothesis, which means that the model is statistically significant and has at least one predictor that is significantly related to the response. In this case, the F-statistic is very large and the p-value is very small, which means that the model is statistically significant and has at least one predictor that is significantly related to the response.
+
+
+e. State and evaluate the assumptions of Poisson model. Comment on any weird pattern.
+
+The distribution of runs scored by each player is displayed on the graph. With a long tail to the right, the distribution is skewed to the right. This implies that a greater proportion of players scored many runs than a smaller number of runs. There are a few very talented players who typically score a lot of runs, while the majority of players score more in the middle. This is a common pattern in the data on runs scored.
+Poisson model can be used to represent count data, like a player's total number of runs scored. Three primary presumptions underlie the Poisson model:
+1) The variables need to be unrelated to one another. This indicates that the total runs scored by a player has no bearing on the total runs scored by another player.
+2) There must be a steady rate of occurrences. This implies that a player's expected run total in any given game is the same, independent of the type of game.
+3) There must be a countable event. This implies that a player's run total in a particular game must be a finite amount.
+
+There are some doubts regarding the veracity of the Poisson model assumptions due to the graph's skewed distribution of run scores. One indication that the events are not independent of one another is the fact that there are more players with high run scores than low run scores. Furthermore, it appears that the events do not happen at a constant pace because a player's expected run total in a particular game is likely to change based on how tough the pitching is.
+
+Comments on weird pattern:
+  
+1) A few very talented players who frequently score a lot of runs are probably the cause of the skewness to the right.
+
+2) The data's imperfect independence may also be the cause of the skewness. A player is more likely to score a run when batting against a weak pitcher than when batting against a strong pitcher, for instance.
+
+3) Another reason for the skewness could be that the data is not entirely countable. For instance, even though a player may have actually run around the bases more than once, they are only given credit for one run when they hit a home run.
+
+
+f. Now create a new model that includes teamID as a random effect. Ensure there are no fit warnings. What does the results tell us about the importance of team on number of runs that players score?
+
+```{r}
+hits_players <- hits_players %>%
+  filter(H > 0) %>%
+  mutate(yearID = as.factor(yearID))  # Converting yearID to a factor
+
+# Filtering and updating the dataset for players excluding Position "P"
+player_data <- hits_players %>%
+  filter(POS != "P") %>%
+  droplevels()  # Dropping unused levels
+
+# Assuming teamID is a factor variable in hits_players, you can modify the filtering process accordingly
+# If teamID is numeric, consider converting it to a factor before filtering
+# Example: hits_players$teamID <- as.factor(hits_players$teamID)
+
+# Then filter the players based on teamID excluding Position "P"
+player_data <- hits_players %>%
+  filter(POS != "P") %>%
+  droplevels()  # Dropping unused level
+
+# Fit the Poisson model with teamID as a random effect
+
+# poisson_model2 <- glmer(R ~ H + factor(yearID) + POS + height + age + (1|teamID), data = hits_players, family = "poisson")
+
+# Check for fit warnings
+# warnings()
+
+# Could not do further due to following error:
+# Error in initializePtr() : function 'cholmod_factor_ldetA' not provided by package 'Matrix'
+```
+
+g. What is the mean number of runs could you expect 27-year-old, 85-inch-tall outfielders playing for the
+Cleveland Indians in 2015 with 50 hits to have scored? comment on the result.
+
+```{r}
+
+# Filter data for players who have had at least one hit
+hits_data <- subset(df_BattingData, H > 0)
+
+# Fitting the Poisson regression model
+poisson_model <- glm(R ~ H + factor(yearID) + POS + height + age, 
+                     data = hits_players, family = "poisson")
+
+# Calculating mean runs 
+mean_data <- hits_data %>%
+group_by(yearID, teamID, age, height, POS, H) %>%
+summarize(meanRuns = mean(R))
+
+# Predicting the mean runs as per given criteria
+predict_runs <- glm(meanRuns ~ H + factor(yearID) + POS + height + age, data = mean_data, family = "poisson")
+new_data <- data.frame(H = 50, yearID = 2015, teamID = "CLE", age = 27, height = 85, POS = "OF")
+predicted_runs <- predict(predict_runs, newdata = new_data)
+predicted_runs
+
+```
+
+# Question 3 (Lasso Regression for Logistic Regression)
+
+a. From ‘Teams’ dataset, create a new dataset, df_DivWinners, by choosing data from the years 1990 to
+2015 and removing all the variables that are team identifiers in the dataset, as well as ‘lgID’,
+‘Rank’,‘franchID’,‘divID’, ‘WCWin’,‘LgWin’,‘WSwin’,‘name’ and ‘park’. Drop incomplete cases from the
+dataset ‘df_DivWinners’. Split the resulting into a 80% training and a 20% testing set so that the variable
+‘DivWin’ is balanced between the two datasets. Use the seed 123.
+
+```{r}
+#Loading Teams Dataset
+data_teams <- data("Teams")
+
+# Filter data for the years 1990 to 2015
+df_DivWinners <- Lahman::Teams %>%
+  filter(yearID >= 1990 & yearID <= 2015) %>%
+  select(-c(teamIDretro, teamIDlahman45, teamIDBR, lgID,Rank, franchID,divID,WCWin,LgWin, WSWin, name,park)) %>%
+  drop_na() 
+
+# Split the dataset into 80% training and 20% testing, balancing 'DivWin'
+set.seed(123)
+trainIndex <- createDataPartition(df_DivWinners$DivWin, p = 0.8, list = FALSE, times = 1)
+train_set <- df_DivWinners[trainIndex, ]
+test_set <- df_DivWinners[-trainIndex, ]
+
+# Checking if 'DivWin' is balanced in both sets
+table(train_set$DivWin)
+table(test_set$DivWin)
+
+glimpse(train_set)
+```
+
+
+b. Use the training data to fit a logistic regression model using the ‘glmnet’ command. Plot residual
+deviance against number of predictors. Comment on the result.
+
+```{r}
+x_train <- as.matrix(train_set[, -which(names(train_set) == "DivWin")])  # Predictors
+y_train <- as.factor(train_set$DivWin)  # Response variable (assuming it's categorical)
+
+# Fit a logistic regression model using glmnet
+Logistic_model <- glmnet(x_train, y_train, family = "binomial")
+
+# Plot residual deviance against number of predictors
+plot(Logistic_model$df, Logistic_model$deviance, xlab = "Number of Predictors", ylab = "Residual Deviance",
+     main = "Residual Deviance vs Number of Predictors")
+```
+
+The lasso coefficients are plotted against the lambda parameter. One regularization parameter that regulates how much shrinkage is applied to the coefficients is the lambda parameter. The coefficients shrink more sharply as lambda rises, and some coefficients might even be set to zero.
+The plot demonstrates how the lasso coefficients increase to zero as lambda increases from their initial large value. This is how the lasso regression model is supposed to behave.
+The plot also demonstrates the sparse model that the lasso regression model has picked up. This suggests that the model bases its predictions only on a small number of features.
+Additionally, the plot demonstrates that some coefficients shrink to zero faster than others. This implies that these coefficients have less significance in predicting a player's total run total.
+The plot indicates which features have been chosen for use in the prediction model by the lasso regression model. These are the characteristics whose coefficients, even at high lambda values, do not shrink to zero.
+
+c. Now use cross-validation to choose a moderately conservative model. State the variables you will
+include.
+
+```{r}
+df_DivWinners <- Teams %>%
+  select(!c(2:5, lgID, Rank, franchID, divID, WCWin, LgWin, WSWin, name, park, teamIDBR, teamIDlahman45, teamIDretro)) # removing unwanted columns
+
+set.seed(123)
+training.samples <- c(df_DivWinners$DivWin) %>% # dividing data
+  createDataPartition(p = 0.8, list = F)
+train.data <- df_DivWinners[training.samples, ]
+test.data <- df_DivWinners[-training.samples, ]
+
+runs <- as.vector(train.data$R)
+runpredict <- model.matrix(~ . - 1, train.data[, -c(7)])
+
+# Check and correct dimensions
+n_obs <- min(nrow(runpredict), length(runs))  # Determine the minimum number of observations
+
+# Subset data to match dimensions
+runpredict_subset <- runpredict[1:n_obs, ]
+runs_subset <- runs[1:n_obs]
+
+# Fit the model with corrected data
+runfit <- glmnet(runpredict_subset, runs_subset, family = "poisson")
+
+# Plotting
+plot(runfit, xvar = "dev")
+plot(runfit, xvar = "lambda")
+
+# Check and correct dimensions
+n_obs <- min(nrow(runpredict), length(runs))  # Determine the minimum number of observations
+
+# Subset data to match dimensions
+runpredict_subset <- runpredict[1:n_obs, ]
+runs_subset <- runs[1:n_obs]
+
+# Perform cross-validation with corrected data
+set.seed(123)
+runscv <- cv.glmnet(runpredict_subset, runs_subset)
+
+# Plot cross-validation results
+plot(runscv)
+```
+
+We will include these variables:
+  
+glimr
+h
+factor(yearID)
+POS
+height
+age
+
+These factors were chosen because it is possible to predict the response variable—a player's total number of runs scored—by looking at all of them.
+
+
+The height of the player is h. A player's physical attributes, such as height, can influence their batting prowess. Taller players might be able to hit longer home runs and have more power, for instance.
+
+d. Fit the model on the training data using glm(), interpret the results and write the form of the model
+(coefficients should be rounded to 2 significant figures). Then predict on the testing data. Plot
+comparative ROC curves and summarise your findings.
+
+```{r}
+df_DivWinners <- Teams %>%
+  select(!c(2:5, lgID, Rank, franchID, divID, WCWin, LgWin, WSWin, name, park, teamIDBR, teamIDlahman45, teamIDretro)) # removing unwanted columns
+
+
+nrow(train.data)
+nrow(df_DivWinners)
+
+# Example: Merging based on a common identifier
+merged_data <- merge(train.data, df_DivWinners, by = "yearID")
+# Identify rows with missing values
+missing_rows <- which(apply(df_DivWinners, 1, function(x) any(is.na(x))))
+
+# Remove rows with missing values
+df_DivWinners <- df_DivWinners[-missing_rows,]
+nrow(df_DivWinners) == length(df_DivWinners$DivWin)
+table(df_DivWinners$DivWin)  # Check the distribution of values in 'DivWin'
+
+
+# Recode 'DivWin' to have only 0s and 1s
+df_DivWinners$DivWin <- ifelse(df_DivWinners$DivWin == "Y", 1, 0)  # Replace 'Y' with the actual value you want to consider as 1
+
+
+# Check the distribution again
+table(df_DivWinners$DivWin)
+
+glm_fit2 <- glm(DivWin ~ H + HR + BB + yearID + W + L + SB + HBP + SF + ERA + SHO + SV + IPouts + HRA + SOA + FP + attendance + BPF + X2B + X3B, data = df_DivWinners)
+
+predictions <- predict(glm_fit2, newdata = test.data, type = "response")
+
+predictions_train <- predict(glm_fit2, newdata = train.data, type = "response")
+
+# Calculate ROC curve for the model's predictions
+
+roc_train <- roc(train.data$DivWin, predictions_train)
+roc_test <- roc(test.data$DivWin, predictions)
+
+ggplot() +
+  geom_line(aes(roc_test$specificity, roc_test$sensitivity)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  labs(title = "ROC Curve", x = "False Positive Rate", y = "True Positive Rate")
+
+
+```
+The ROC curve, with the false positive rate (FPR) on the x-axis and the true positive rate (TPR) on the y-axis, illustrates the classifier's diagnostic performance. The FPR represents the proportion of negative instances erroneously classified as positive, while the TPR indicates the proportion of positive instances correctly identified as positive.
+
+This ROC curve demonstrates the classifier's effective diagnostic capability. It accurately identifies over 90% of positive cases while misclassifying less than 10% of negative cases.
+Which means the model is able to detect the true winners 90% whereas, 10% it does not predict the winners accurately.
+
+The confusion matrix shows that the model correctly classified 1178 out of 1446 positive cases (Y) and 268 out of 268 negative cases (N). This results in an overall accuracy of 90.7%.
+
+Precision, recall, and F1 score are three commonly used metrics for evaluating the performance of classification models. Precision measures the proportion of positive predictions that are actually correct, while recall measures the proportion of actual positive cases that are correctly identified. F1 score is the harmonic mean of precision and recall, and it provides a balanced measure of both.
+
+In this case, the precision is 100%, meaning that all of the predicted positive cases are actually correct. The recall is 84.4%, meaning that 84.4% of the actual positive cases were correctly identified. The F1 score is 91.5%, which indicates a good overall performance.
+
+e. Find Youden’s index for the training data and calculate confusion matrices at this cutoff for both training and testing data. Comment on the quality of the model.
+
+```{r}
+youdenrun <- coords(roc_train, "b", best.method = "youden", transpose = TRUE)
+youdenrun
+
+predictions_cutoff <- ifelse(predictions >= youdenrun, 1, 0)
+predictions_train_cutoff <- ifelse(predictions_train >= youdenrun, 1, 0)
+
+
+confusion_matrix_test <- table(predictions_cutoff, test.data$DivWin)
+confusion_matrix_test
+confusion_matrix_train <- table(predictions_train_cutoff, train.data$DivWin)
+confusion_matrix_train
+```
+
+The model's poor accuracy rate is 23%. This indicates that only 23% of the time can the model accurately predict the result. Additionally, the model's 19% precision is poor. This indicates that, in 19% of cases when the model predicts a win, the player does not win. Additionally, the model's 8% recall is poor. This indicates that only 8% of the actual winners are correctly identified by the model. At 16%, the F1-score is likewise low.
+
+In general, the model does a poor job of predicting who will win.
+
+
+f. Calculate the sensitivity+specificity on the testing data as a function of divID and plot as a bar chart.
+Comment on the result.
+
+```{r}
+df_DivWinners3 <- Lahman::Teams %>%
+  filter(yearID >= 1990 & yearID <= 2015) %>%
+  select(-c(teamIDretro, teamIDlahman45, teamIDBR, lgID,Rank, franchID,WCWin,LgWin, WSWin, name,park)) %>%
+  drop_na()
+
+df_DivWinners4 <- droplevels(df_DivWinners3)
+
+set.seed(123)
+trainIndex2 <- createDataPartition(df_DivWinners4$divID, p = 0.8, list = FALSE, times = 1)
+train.data2 <- df_DivWinners4[trainIndex2, ]
+test.data2<- df_DivWinners4[-trainIndex2, ]
+
+predictions_train2 <- predict(glm_fit2, newdata = train.data2, type = "response")
+
+roc_train2 <- roc(train.data2$divID, predictions_train2)
+
+youdenrun2 <- coords(roc_train2, "b", best.method = "youden", transpose = TRUE)
+
+sensitivity_specificity_sum <- youdenrun2[2] + youdenrun2[3]
+
+df_barplot <- data.frame(divID = unique(test.data2$divID), Sensitivity_Specificity = sensitivity_specificity_sum)
+
+ggplot(df_barplot, aes(x = divID, y = Sensitivity_Specificity)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Sensitivity + Specificity by divID", x = "divID", y = "Sensitivity + Specificity")
+```
+
+The graph illustrates how sensitivity and specificity vary across different cutoff values employed by the model. Sensitivity, denoting the accuracy in identifying positive cases, and specificity, indicating the precision in recognizing negative cases, demonstrate an inverse relationship in this plot. As sensitivity rises, specificity tends to decrease, and vice versa, highlighting the trade-off between these metrics. The ideal cutoff value, found at the intersection of sensitivity and specificity curves, represents the threshold that optimizes the model's overall accuracy. However, in this instance, the model displays a scenario with high sensitivity but low specificity. This suggests that while the model effectively detects most positive cases, it tends to inaccurately classify a significant number of negative cases as positive. This issue might stem from potential overfitting, where the model excessively focuses on the training data, hindering its ability to generalize to new information. Additionally, an inadequate calibration in the model could be contributing to this disparity. Calibration is the association between predicted probabilities and actual probabilities. A poorly calibrated model might misjudge the certainty of outcomes, leading to biased predictions. A well-calibrated model would assign probabilities around 0.5 for equally probable positive or negative outcomes.
