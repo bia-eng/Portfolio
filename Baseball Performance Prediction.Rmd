@@ -1,5 +1,5 @@
 ---
-title: "Coursework_MAP501_2023"
+title: "Baseball Performance Prediction"
 date: 30/11/2023
 output:
   html_document:
